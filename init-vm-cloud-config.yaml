@@ -1,0 +1,18 @@
+groups:
+  - admingroup: [root,sys]
+  - cloud-users
+
+users:
+  - default
+
+apt:
+  sources:
+    source1:
+      source: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+      key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+package_update: true
+
+packages:
+  - htop
+  - kubeadm
