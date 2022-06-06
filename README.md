@@ -2,6 +2,27 @@
 
 Collection of setup scripts for a local kubernetes cluster.
 
+## kubeadm setup options
+
+### kubeadm init parameter
+1. dns or ip of loadbalancer
+--control-plane-endpoint
+2. pod network plugin
+--pod-network-cidr
+3. (optional) explicitly specify container runtime
+--cri-socket
+4. (optional) explicitly set gateway
+--apiserver-advertise-address
+
+```
+kubeadm init <args>
+```
+TODO:
+- what load-balancer is required
+- what dns server is required
+- what is highly available, do I need it?
+
+
 ## Resources
 
 *cloudinit*
