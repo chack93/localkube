@@ -12,3 +12,14 @@ https://medium.com/platformer-blog/kubernetes-multi-node-cluster-with-multipass-
 
 *k8s doc*
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+cgroup driver?
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/
+
+dns/ip of loadbalancer?
+--control-plane-endpoint
+
+pod network add-on?
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#pod-network
+--pod-network-cidr
+
