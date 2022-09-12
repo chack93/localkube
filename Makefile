@@ -6,11 +6,11 @@ ID_RSA_PUB=$(shell cat ~/.ssh/id_rsa.pub)
 MASTER_NODE_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${MASTER_NAME}")) | .ipv4[]' -r)
 WORKER_NODE_1_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_1}")) | .ipv4[]' -r)
 WORKER_NODE_2_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_2}")) | .ipv4[]' -r)
-
 CLOUD_INIT_CONFIG="groups:\n\
 	- admingroup: [root,sys]\nssh_authorized_keys:\n\
 	- ${ID_RSA_PUB}\nusers:\n\
 	- default"
+NODE_CONFIG=--cpus 2 --mem 2G --disk 5G --cloud-init tmp-provision-vm-config.yaml 22.04
 
 .PHONY: help
 help:
@@ -39,9 +39,9 @@ destroy-vm:
 .PHONY: provision-vm
 provision-vm: destroy-vm
 	echo ${CLOUD_INIT_CONFIG} > tmp-provision-vm-config.yaml
-	multipass launch --name ${MASTER_NAME} --cpus 2 --mem 2G --disk 5G --cloud-init tmp-provision-vm-config.yaml
-	multipass launch --name ${WORKER_NAME_1} --cpus 2 --mem 2G --disk 5G --cloud-init tmp-provision-vm-config.yaml
-	multipass launch --name ${WORKER_NAME_2} --cpus 2 --mem 2G --disk 5G --cloud-init tmp-provision-vm-config.yaml
+	multipass launch --name ${MASTER_NAME} ${NODE_CONFIG}
+	multipass launch --name ${WORKER_NAME_1} ${NODE_CONFIG}
+	multipass launch --name ${WORKER_NAME_2} ${NODE_CONFIG}
 	rm -f tmp-provision-vm-config.yaml
 
 .PHONY: list-vm

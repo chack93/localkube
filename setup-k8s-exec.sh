@@ -1,3 +1,8 @@
+ARCH=$(arch)
+if [ ${ARCH} = "aarch64" ]; then
+  ARCH=arm64
+fi
+
 # disable swap
 sudo swapoff -a
 
@@ -16,7 +21,7 @@ sudo apt-get install -y \
 
 # nerdctl
 sudo mkdir -p /run/setup-tmp
-sudo wget "https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-arm64.tar.gz" -O /run/setup-tmp/nerdctl.tar.gz
+sudo wget "https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-${ARCH}.tar.gz" -O /run/setup-tmp/nerdctl.tar.gz
 sudo tar Cxzvf /usr/local/bin /run/setup-tmp/nerdctl.tar.gz
 
 # kubelet kubeadm & kubectl
@@ -26,43 +31,54 @@ sudo apt-get update -y
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
-
 # containerd
-#sudo mkdir -p /etc/apt/keyrings
-#curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo apt-get update -y
 
+sudo apt-get install ca-certificates curl gnupg lsb-release -y
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update -y
+sudo apt-get install containerd.io docker-ce docker-ce-cli docker-compose-plugin -y
+sudo sed -i 's/disabled_plugins/#disabled_plugins/g' /etc/containerd/config.toml
+echo '
+[plugins]
+  [plugins."io.containerd.grpc.v1.cri"]
+    sandbox_image = "registry.k8s.io/pause:3.2"
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+      SystemdCgroup = true
+' | sudo tee -a /etc/containerd/config.toml
+sudo systemctl restart containerd
 
-#######
-  #- [ wget, "", -O, /run/setup-tmp ]
-  #- [ ls ]
+# configure cgroup driver
+KUBEADM_VERSION=$(kubeadm version | sed -e 's/.*GitVersion:"//g' -e 's/",.*//g')
+echo '
+# kubeadm-config.yaml
+kind: ClusterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+kubernetesVersion: KUBEADM_VERSION
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+cgroupDriver: systemd
+' \
+  | sed "s/KUBEADM_VERSION/${KUBEADM_VERSION}/g" \
+  | sudo tee /run/setup-tmp/kubeadm-config.yaml
+sudo kubeadm init --config /run/setup-tmp/kubeadm-config.yaml
 
+# CRI-O
+OS="xUbuntu_22.04"
+VERSION=$(echo $KUBEADM_VERSION | sed 's/v\([0-9]*.[0-9]*\).*/\1/g')
+echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee /etc/apt/sources.list.d/backports.list
+sudo apt-get update -y
+sudo apt-get install -y -t buster-backports libseccomp2 || sudo apt update -y -t buster-backports libseccomp2
 
-  #- [ echo, "install containerd" ]
-  #- [ wget, "", -O, /run/setup-tmp ]
-  #- [ ]
-  #- [ echo, "install containerd" ]
-  #- [ wget, "https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-arm64.tar.gz", -O, /run/setup-tmp/containerd.tar.gz ]
-  #- [ tar, Cxzvf, /usr/local/, /run/setup-tmp/containerd.tar.gz ]
-  #- [ echo, "install containerd systemd script" ]
-  #- [ wget, "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service", -O, /usr/lib/systemd/system/containerd.service ]
-  #- [ systemctl, daemon-reload ]
-  #- [ systemctl, enable, --now, containerd ]
-  #- [ echo, "install cunc" ]
-  #- [ wget, "https://github.com/opencontainers/runc/releases/download/v1.1.2/runc.arm64", -O, /usr/local/sbin/runc ]
-  #- [ chmod, 755, /usr/local/sbin/runc ]
-  #- [ echo, "install cni-plugins" ]
-  #- [ wget, "https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-arm64-v1.1.1.tgz", -O, /run/setup-tmp/cni-plugins.tar.gz ]
-  #- [ tar, Cxzvf, /opt/cni/bin, /run/setup-tmp/cni-plugins.tar.gz ]
-  #- [ echo, "install kubeadm, kubelet & kubectl" ]
-  #- [ wget, "https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/arm64/kubeadm", -O, /usr/local/bin/kubeadm ]
-  #- [ chmod, 755, /usr/local/bin/kubeadm ]
-  #- [ wget, "https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/arm64/kubelet", -O, /usr/local/bin/kubelet ]
-  #- [ chmod, 755, /usr/local/bin/kubelet ]
-  #- [ wget, "https://storage.googleapis.com/kubernetes-release/release/v1.24.1/bin/linux/arm64/kubectl", -O, /usr/local/bin/kubectl ]
-  #- [ chmod, 755, /usr/local/bin/kubectl ]
-  #- [ wget, "https://raw.githubusercontent.com/kubernetes/release/v0.4.0/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service", -O, /etc/systemd/system/kubelet.service ]
-  #- [ sed, -i, "s:/usr/bin:/usr/local/bin:g", /etc/systemd/system/kubelet.service ]
-  #- [ wget, "https://raw.githubusercontent.com/kubernetes/release/v0.4.0/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf", -O, /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]
-  #- [ sed, -i, "s:/usr/bin:/usr/local/bin:g", /etc/systemd/system/kubelet.service.d/10-kubeadm.conf ]
-  #- [ systemctl, enable, --now, kubelet ]
+echo "deb [signed-by=/usr/share/keyrings/libcontainers-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+echo "deb [signed-by=/usr/share/keyrings/libcontainers-crio-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+sudo mkdir -p /usr/share/keyrings
+curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/libcontainers-archive-keyring.gpg
+curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/libcontainers-crio-archive-keyring.gpg
+sudo apt-get update -y
+sudo apt-get install cri-o cri-o-runc -y
 
