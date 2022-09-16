@@ -16,8 +16,10 @@ NODE_CONFIG=--cpus 2 --mem 2G --disk 5G --cloud-init tmp-provision-vm-config.yam
 help:
 	@echo "make options\n\
 		- provision-vm     provision master & 2 worker multipass vm's\n\
-		- list-vm          list multipass vm's\n\
 		- setup-k8s        setup-vm's & install k8s exec\n\
+		- list-vm          list multipass vm's\n\
+		- start-vm         start all multipass vm's\n\
+		- stop-vm          stop all multipass vm's\n\
 		- sh-master        open shell in master node\n\
 		- sh-worker-1      open shell in worker node 1\n\
 		- sh-worker-2      open shell in worker node 2\n\
@@ -47,6 +49,19 @@ provision-vm: destroy-vm
 .PHONY: list-vm
 list-vm:
 	multipass list
+
+.PHONY: start-vm
+start-vm:
+	multipass start ${MASTER_NAME}
+	multipass start ${WORKER_NAME_1}
+	multipass start ${WORKER_NAME_2}
+
+
+.PHONY: stop-vm
+stop-vm:
+	multipass stop ${MASTER_NAME}
+	multipass stop ${WORKER_NAME_1}
+	multipass stop ${WORKER_NAME_2}
 
 .PHONY: setup-k8s
 setup-k8s: provision-vm
