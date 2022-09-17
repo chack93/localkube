@@ -39,7 +39,7 @@ sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update -y
-sudo apt-get install containerd.io docker-ce docker-ce-cli docker-compose-plugin -y
+sudo apt-get install -y containerd.io #docker-ce docker-ce-cli docker-compose-plugin
 sudo sed -i 's/disabled_plugins/#disabled_plugins/g' /etc/containerd/config.toml
 echo '
 [plugins]
@@ -72,7 +72,7 @@ OS="xUbuntu_22.04"
 VERSION=$(echo $KUBEADM_VERSION | sed 's/v\([0-9]*.[0-9]*\).*/\1/g')
 echo 'deb http://deb.debian.org/debian buster-backports main' | sudo tee /etc/apt/sources.list.d/backports.list
 sudo apt-get update -y
-sudo apt-get install -y -t buster-backports libseccomp2 || sudo apt update -y -t buster-backports libseccomp2
+sudo apt-get install -y -t buster-backports libseccomp2 || sudo apt-get update -y -t buster-backports libseccomp2
 
 echo "deb [signed-by=/usr/share/keyrings/libcontainers-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
 echo "deb [signed-by=/usr/share/keyrings/libcontainers-crio-archive-keyring.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
