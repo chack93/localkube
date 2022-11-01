@@ -1,4 +1,4 @@
 gen-provision-vm-config.yaml
 gen-kube-init-output
 gen-join-cmd.sh
-admin.conf
+gen-admin.conf
