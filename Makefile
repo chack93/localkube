@@ -1,4 +1,3 @@
-NAME=gcity_app
 CONTROL_PLANE_NAME=lk-control
 WORKER_NAME_1=lk-worker1
 WORKER_NAME_2=lk-worker2
@@ -16,7 +15,7 @@ ssh_authorized_keys:\n\
 	- ${ID_RSA_PUB}\nusers:\n\
 	- default\n\
 "
-NODE_CONFIG=--cpus 2 --mem 2G --disk 5G --cloud-init gen-provision-vm-config.yaml 20.04
+NODE_CONFIG=--cpus 2 --mem 2G --disk 7G --cloud-init gen-provision-vm-config.yaml 20.04
 
 ETC_HOSTS_CONFIG="\n\
 ${CONTROL_PLANE_NODE_IP}	${CONTROL_PLANE_NAME}\n\
@@ -34,7 +33,7 @@ help:
 		- list-vm                 list multipass vm's\n\
 		- start-vm                start all multipass vm's\n\
 		- stop-vm                 stop all multipass vm's\n\
-		- sh-control-plane        open shell in control-plane node\n\
+		- sh-control              open shell in control-plane node\n\
 		- sh-worker-1             open shell in worker 1\n\
 		- sh-worker-2             open shell in worker 2\n\
 		- sh-worker-3             open shell in worker 3\n\
@@ -102,12 +101,11 @@ stop-vm:
 .PHONY: setup-k8s
 setup-k8s: provision-vm
 	# setup control-plane node
-	ssh -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP} < setup-k8s-dependencies.sh || true
-	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_1_IP} < setup-k8s-dependencies.sh || true
-	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_2_IP} < setup-k8s-dependencies.sh || true
-	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} < setup-k8s-dependencies.sh || true
-	# wait for kube init script to be executed
-	sleep 30
+	ssh -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP} < setup-k8s-dependencies.sh
+	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_1_IP} < setup-k8s-dependencies.sh
+	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_2_IP} < setup-k8s-dependencies.sh
+	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} < setup-k8s-dependencies.sh
+	# init control plane & generate join command
 	ssh -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP} < setup-k8s-init-control-plane.sh
 	scp -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP}:/tmp/kube-init-output gen-kube-init-output
 	scp -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP}:.kube/config gen-admin.conf
@@ -118,8 +116,8 @@ setup-k8s: provision-vm
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} < gen-join-cmd.sh
 	rm -f gen-join-cmd.sh
 
-.PHONY: sh-control-plane
-sh-control-plane:
+.PHONY: sh-control
+sh-control:
 	multipass shell ${CONTROL_PLANE_NAME}
 
 .PHONY: sh-worker-1

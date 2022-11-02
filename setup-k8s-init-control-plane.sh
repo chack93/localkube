@@ -2,7 +2,7 @@ set -e
 set -o pipefail
 
 # kubeadm init
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version 1.25.3 | sudo tee /tmp/kube-init-output
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version 1.24.0 | sudo tee /tmp/kube-init-output
 
 # make kubectl available for non root user
 mkdir -p $HOME/.kube
