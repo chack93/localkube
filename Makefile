@@ -29,7 +29,8 @@ help:
 	@echo "make options\n\
 		- destroy-vm              destroy all multipass vm's related to this k8s env\n\
 		- provision-vm            provision control-plane & 3 node multipass vm's\n\
-		- setup-k8s               setup-vm's & install k8s exec\n\
+		- setup-k8s               install k8s binaries\n\
+		- setup-all               provision vm's & setup k8s\n\
 		- list-vm                 list multipass vm's\n\
 		- start-vm                start all multipass vm's\n\
 		- stop-vm                 stop all multipass vm's\n\
@@ -98,13 +99,16 @@ stop-vm:
 	multipass stop ${WORKER_NAME_2} || true
 	multipass stop ${WORKER_NAME_3} || true
 
-.PHONY: setup-k8s
-setup-k8s: provision-vm
+.PHONY: setup-k8s-install-dependencies
+setup-k8s-install-dependencies:
 	# setup control-plane node
 	ssh -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP} < setup-k8s-dependencies.sh
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_1_IP} < setup-k8s-dependencies.sh
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_2_IP} < setup-k8s-dependencies.sh
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} < setup-k8s-dependencies.sh
+
+.PHONY: setup-k8s-control-plane
+setup-k8s-control-plane:
 	# init control plane & generate join command
 	ssh -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP} < setup-k8s-init-control-plane.sh
 	scp -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP}:/tmp/kube-init-output gen-kube-init-output
@@ -115,6 +119,12 @@ setup-k8s: provision-vm
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_2_IP} < gen-join-cmd.sh
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} < gen-join-cmd.sh
 	rm -f gen-join-cmd.sh
+
+.PHONY: setup-k8s
+setup-k8s: setup-k8s-install-dependencies setup-k8s-control-plane
+
+.PHONY: setup-all
+setup-all: provision-vm setup-k8s
 
 .PHONY: sh-control
 sh-control:
