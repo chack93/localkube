@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-deployment
+  labels:
+    app: example-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: example-deployment
+  template:
+    metadata:
+      labels:
+        app: example-deployment
+    spec:
+      containers:
+        - name: busybox
+          image: busybox
+          command: ["/bin/sh", "-ec", "while :; do echo 'sleep for 10sec'; sleep 10; done"]

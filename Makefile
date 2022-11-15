@@ -3,10 +3,10 @@ WORKER_NAME_1=lk-worker1
 WORKER_NAME_2=lk-worker2
 WORKER_NAME_3=lk-worker3
 ID_RSA_PUB=$(shell cat ~/.ssh/id_rsa.pub)
-CONTROL_PLANE_NODE_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${CONTROL_PLANE_NAME}")) | .ipv4[]' -r)
-WORKER_1_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_1}")) | .ipv4[]' -r)
-WORKER_2_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_2}")) | .ipv4[]' -r)
-WORKER_3_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_3}")) | .ipv4[]' -r)
+CONTROL_PLANE_NODE_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${CONTROL_PLANE_NAME}")) | .ipv4[0]' -r)
+WORKER_1_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_1}")) | .ipv4[0]' -r)
+WORKER_2_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_2}")) | .ipv4[0]' -r)
+WORKER_3_IP=$(shell multipass list --format json | jq '.list[] | select(.name|test("${WORKER_NAME_3}")) | .ipv4[0]' -r)
 CLOUD_INIT_CONFIG="\n\
 manage_etc_hosts: localhost\n\
 groups:\n\
@@ -38,6 +38,8 @@ help:
 		- sh-worker-1             open shell in worker 1\n\
 		- sh-worker-2             open shell in worker 2\n\
 		- sh-worker-3             open shell in worker 3\n\
+		- push-config             push k8s_config files to control-plane node\n\
+		- pull-config             pull k8s_config files from control-plane node\n\
 		- help                    display this message\n\
 		\n\
 		-- vm list --\n\
@@ -141,4 +143,12 @@ sh-worker-2:
 .PHONY: sh-worker-3
 sh-worker-3:
 	multipass shell ${WORKER_NAME_3}
+
+.PHONY: push-config
+push-config:
+	scp -o StrictHostKeyChecking=no k8s_config/*.yml ubuntu@${CONTROL_PLANE_NODE_IP}:/home/ubuntu/. 
+
+.PHONY: pull-config
+pull-config:
+	scp -o StrictHostKeyChecking=no ubuntu@${CONTROL_PLANE_NODE_IP}:/home/ubuntu/*.yml k8s_config/.
 
