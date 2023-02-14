@@ -1,0 +1,51 @@
+images:
+# Try to use release-yyyyMMdd image if available. Note that release-yyyyMMdd will be removed after several months.
+- location: "https://cloud-images.ubuntu.com/releases/22.10/release-20221201/ubuntu-22.10-server-cloudimg-amd64.img"
+  arch: "x86_64"
+  digest: "sha256:4228fae635160ee2eeebda7b3f466e99729121958c125c6fbefe79178355d09b"
+- location: "https://cloud-images.ubuntu.com/releases/22.10/release-20221201/ubuntu-22.10-server-cloudimg-arm64.img"
+  arch: "aarch64"
+  digest: "sha256:9575dfe9f925ec251a933b88a38c5582a18e9d19495025ac01cb2e217e5f14ca"
+# Fallback to the latest release image.
+# Hint: run `limactl prune` to invalidate the cache
+- location: "https://cloud-images.ubuntu.com/releases/22.10/release/ubuntu-22.10-server-cloudimg-amd64.img"
+  arch: "x86_64"
+- location: "https://cloud-images.ubuntu.com/releases/22.10/release/ubuntu-22.10-server-cloudimg-arm64.img"
+  arch: "aarch64"
+
+mounts:
+- location: "~"
+- location: "/tmp/lima"
+  writable: true
+
+# VM type: "qemu" or "vz" (on macOS 13 and later).
+# The vmType can be specified only on creating the instance.
+# The vmType of existing instances cannot be changed.
+# 🟢 Builtin default: "qemu"
+vmType: "qemu"
+
+# Arch: "default", "x86_64", "aarch64".
+# 🟢 Builtin default: "default" (corresponds to the host architecture)
+arch: "x86_64"
+
+# CPUs: if you see performance issues, try limiting cpus to 1.
+# 🟢 Builtin default: 4
+cpus: 2
+
+# Memory size
+# 🟢 Builtin default: "4GiB"
+memory: "2GiB" 
+
+# Disk size
+# 🟢 Builtin default: "100GiB"
+disk: "7GiB"
+
+rosetta:
+  # Enable Rosetta for Linux (EXPERIMENTAL).
+  # Hint: try `softwareupdate --install-rosetta` if Lima gets stuck at `Installing rosetta...`
+  # 🟢 Builtin default: false
+  enabled: true
+  # Register rosetta to /proc/sys/fs/binfmt_misc
+  # 🟢 Builtin default: false
+  binfmt: true
+
