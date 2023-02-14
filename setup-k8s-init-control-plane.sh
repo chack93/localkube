@@ -21,8 +21,6 @@ echo '
 source /home/ubuntu/k8s_completion
 alias k="kubectl"' >> /home/ubuntu/.profile
 
-sleep 10
-
 # apply network plugin
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
 #kubectl apply -f calico.yaml

@@ -16,7 +16,7 @@ ssh_authorized_keys:\n\
 	- default\n\
 "
 
-NODE_CONFIG=--cpus 2 --memory 2G --disk 7G --cloud-init gen-provision-vm-config.yaml 20.04
+NODE_CONFIG=--cpus 2 --memory 2G --disk 7G --cloud-init gen-provision-vm-config.yaml 22.10
 
 ETC_HOSTS_CONFIG="\n\
 ${CONTROL_PLANE_NODE_IP}	${CONTROL_PLANE_NAME}\n\
@@ -74,6 +74,7 @@ provision-vm: destroy-vm _provision-vm-1st-step
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_1_IP} "sudo hostnamectl set-hostname ${WORKER_NAME_1}"
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_2_IP} "sudo hostnamectl set-hostname ${WORKER_NAME_2}"
 	ssh -o StrictHostKeyChecking=no ubuntu@${WORKER_3_IP} "sudo hostnamectl set-hostname ${WORKER_NAME_3}"
+	sleep 60
 	# setup /etc/hosts config
 	echo ${ETC_HOSTS_CONFIG} > tmp-hosts
 	scp -o StrictHostKeyChecking=no tmp-hosts ubuntu@${CONTROL_PLANE_NODE_IP}:/tmp/tmp-hosts
