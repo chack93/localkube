@@ -17,11 +17,6 @@ Collection of setup scripts for a local kubernetes cluster.
 ```
 kubeadm init <args>
 ```
-TODO:
-- what load-balancer is required
-- what dns server is required
-- what is highly available, do I need it?
-
 
 ## Resources
 
