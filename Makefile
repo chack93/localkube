@@ -15,7 +15,8 @@ ssh_authorized_keys:\n\
 	- ${ID_RSA_PUB}\nusers:\n\
 	- default\n\
 "
-NODE_CONFIG=--cpus 2 --mem 2G --disk 7G --cloud-init gen-provision-vm-config.yaml 20.04
+
+NODE_CONFIG=--cpus 2 --memory 2G --disk 7G --cloud-init gen-provision-vm-config.yaml 20.04
 
 ETC_HOSTS_CONFIG="\n\
 ${CONTROL_PLANE_NODE_IP}	${CONTROL_PLANE_NAME}\n\
