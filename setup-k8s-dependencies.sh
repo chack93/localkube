@@ -27,11 +27,19 @@ sudo sysctl --system
 
 # containerd
 sudo apt-get update
-sudo apt-get install -y containerd
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo mkdir -p /etc/containerd
 sudo systemctl enable containerd
 sudo systemctl start containerd
-sudo containerd config default | sudo tee /etc/containerd/config.toml
+sudo containerd config default | sed 's/SystemdCgroup = false/SystemdCgroup = true/g' | sudo tee /etc/containerd/config.toml
+sudo systemctl restart containerd
 
 # nerdctl
 curl -L "https://github.com/containerd/nerdctl/releases/download/v1.0.0/nerdctl-1.0.0-linux-${ARCH}.tar.gz" > /tmp/nerdctl.tar.gz
@@ -48,3 +56,21 @@ sudo apt-get install -y \
   kubectl=1.26.0-00
 sudo apt-mark hold kubelet kubeadm kubectl
 
+# force crictl to use contained instead of dockershim
+echo '
+runtime-endpoint: "/run/containerd/containerd.sock"
+image-endpoint: "/run/containerd/containerd.sock"
+timeout: 0
+debug: false
+pull-image-on-create: false
+disable-pull-on-run: false
+' | sudo tee /etc/crictl.yaml
+
+
+# etcdctl
+ETCD_VER=v3.4.24
+curl -L https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-${ARCH}.tar.gz
+(cd /tmp; tar xf etcd-${ETCD_VER}-linux-${ARCH}.tar.gz)
+sudo mv /tmp/etcd-${ETCD_VER}-linux-${ARCH}/etcdctl /usr/local/bin/.
+
+echo done > /tmp/done

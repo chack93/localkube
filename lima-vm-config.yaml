@@ -38,14 +38,7 @@ memory: "2GiB"
 
 # Disk size
 # 🟢 Builtin default: "100GiB"
-disk: "7GiB"
+disk: "10GiB"
 
-rosetta:
-  # Enable Rosetta for Linux (EXPERIMENTAL).
-  # Hint: try `softwareupdate --install-rosetta` if Lima gets stuck at `Installing rosetta...`
-  # 🟢 Builtin default: false
-  enabled: true
-  # Register rosetta to /proc/sys/fs/binfmt_misc
-  # 🟢 Builtin default: false
-  binfmt: true
-
+networks:
+  - lima: shared

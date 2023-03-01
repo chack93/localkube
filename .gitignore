@@ -1,6 +1,7 @@
 gen-provision-vm-config.yaml
 gen-kube-init-output
 gen-join-cmd.sh
+gen-sc-admin.conf
 gen-admin.conf
 k8s_config/*
 .DS_Store

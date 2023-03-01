@@ -17,13 +17,34 @@ Copy the generated kubeconfig from `~/.lima/k8s/config/kubeconfig.yaml` into ~/.
 
 ## setup local cluster
 
-```sh
-make setup-vm
-```
-
-wait for completion (~10 Minutes)
+Install lima to run the vm's.
 
 ```sh
-make setup-k8s
+brew install lima
 ```
 
+lima needs a working socket_vmnet to allow guests reaching each other.
+
+```sh
+# Install socket_vmnet
+brew install socket_vmnet
+INST_LOC=$(brew list socket_vmnet |grep bin/socket_vmnet$)
+sudo mkdir -p /opt/socket_vmnet/bin
+sudo cp ${INST_LOC} /opt/socket_vmnet/bin/socket_vmnet
+# Set up the sudoers file for launching socket_vmnet from Lima
+limactl sudoers >etc_sudoers.d_lima
+sudo install -o root etc_sudoers.d_lima /etc/sudoers.d/lima
+rm -f etc_sudoers.d_lima
+```
+
+Create 1 control node & 2 workers
+
+```sh
+WORKER_COUNT=2 make setup-all
+```
+
+switch to newly generated cluster
+
+```sh
+kubectl config use-context lk-admin@lk
+```
