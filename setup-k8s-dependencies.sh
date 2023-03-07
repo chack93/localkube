@@ -51,9 +51,9 @@ sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-ke
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
 sudo apt-get install -y \
-  kubelet=1.26.0-00 \
-  kubeadm=1.26.0-00 \
-  kubectl=1.26.0-00
+  kubelet=1.26.2-00 \
+  kubeadm=1.26.2-00 \
+  kubectl=1.26.2-00
 sudo apt-mark hold kubelet kubeadm kubectl
 
 # force crictl to use contained instead of dockershim
@@ -65,7 +65,6 @@ debug: false
 pull-image-on-create: false
 disable-pull-on-run: false
 ' | sudo tee /etc/crictl.yaml
-
 
 # etcdctl
 ETCD_VER=v3.4.24

@@ -9,7 +9,7 @@ https://github.com/lima-vm/lima
 ## setup single node cluster
 
 ```sh
-make setup-single-k8s
+make single-setup
 ```
 
 Copy the generated kubeconfig from `~/.lima/k8s/config/kubeconfig.yaml` into ~/.kube/config
@@ -40,11 +40,20 @@ rm -f etc_sudoers.d_lima
 Create 1 control node & 2 workers
 
 ```sh
-WORKER_COUNT=2 make setup-all
+WORKER_COUNT=2 make setup
 ```
 
 switch to newly generated cluster
 
 ```sh
 kubectl config use-context lk-admin@lk
+```
+
+## change architecture
+
+By default, vm's will run the same cpu architecture as the host.
+Use env var ARCH to override this, values: `aarch64` or `x86_64`
+
+```sh
+ARCH=aarch64 make setup
 ```
